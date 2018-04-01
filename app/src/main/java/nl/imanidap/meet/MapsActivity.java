@@ -55,6 +55,8 @@ public class MapsActivity extends FragmentActivity
      */
     @Override
     public void onMapReady(GoogleMap googleMap) {
+        new MeetupEventsDownloadTask(this).execute("");
+
         mMap = googleMap;
         mMap.setOnMarkerClickListener(this);
         mMap.setOnMapClickListener(this);
@@ -69,6 +71,7 @@ public class MapsActivity extends FragmentActivity
 
     @Override
     public boolean onMarkerClick(final Marker marker) {
+
         showEventInfo();
         return true;
     }
@@ -98,5 +101,9 @@ public class MapsActivity extends FragmentActivity
     public void onClick(View view) {
         Intent eventDetailIntent = new Intent(this, EventDetailActivity.class);
         startActivity( eventDetailIntent );
+    }
+
+    public void addEventsToMap(String s){
+        tvGroupName.append(s);
     }
 }
