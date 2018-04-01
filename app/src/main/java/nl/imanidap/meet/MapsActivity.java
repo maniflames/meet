@@ -1,5 +1,6 @@
 package nl.imanidap.meet;
 
+import android.content.Intent;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -95,7 +96,7 @@ public class MapsActivity extends FragmentActivity
 
     @Override
     public void onClick(View view) {
-        //Go to the next screen
-        Log.d(LOG, view.toString());
+        Intent eventDetailIntent = new Intent(this, EventDetailActivity.class);
+        startActivity( eventDetailIntent );
     }
 }
