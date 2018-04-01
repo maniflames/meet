@@ -2,9 +2,15 @@ package nl.imanidap.meet;
 
 import android.os.AsyncTask;
 import android.util.Log;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 
 
 /**
@@ -12,25 +18,52 @@ import java.net.URL;
  */
 
 
-//for now it has no params but I might params that serve as options
-public class MeetupEventsDownloadTask extends AsyncTask<String, Void, String>{
+public class MeetupEventsDownloadTask extends AsyncTask<String, Void, ArrayList<MeetEvent>>{
     private WeakReference<MapsActivity> meetParent;
+    private ArrayList<MeetEvent> meetEvents = new ArrayList<MeetEvent>();
 
     MeetupEventsDownloadTask(MapsActivity parent){
         super();
         meetParent = new WeakReference<MapsActivity>(parent);
     }
 
-    public void getEvents(){
-        //build an URL
-        //Perform a network request
-        //parse JSON and turn it into an Event Object < this should probably happen in the constructor of Event
+    private ArrayList<MeetEvent> meetEventFromJSON(String s){
+
+        JSONObject json = null;
+        try {
+            json = new JSONObject(s);
+            JSONArray events = json.getJSONArray("results");
+            for(int i = 0; i < events.length(); i++ ){
+                JSONObject event = events.getJSONObject(i);
+
+                try{
+                    JSONObject venue = event.getJSONObject("venue");
+
+                    MeetEvent meetEvent = new MeetEvent();
+                    meetEvent.setName(event.getString("name"));
+                    meetEvent.setGroupName(event.getJSONObject("group").getString("name"));
+                    meetEvent.setLatitude(event.getJSONObject("venue").getDouble("lat"));
+                    meetEvent.setLongitude(event.getJSONObject("venue").getDouble("lon"));
+
+                    meetEvents.add(meetEvent);
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return meetEvents;
     }
 
 
     @Override
     //Void... voids < LOL
-    protected String doInBackground(String... voids) {
+    protected ArrayList<MeetEvent> doInBackground(String... voids) {
         URL url = null;
         try {
             url = new URL(DowloadUtils.TEST_URL);
@@ -38,17 +71,17 @@ public class MeetupEventsDownloadTask extends AsyncTask<String, Void, String>{
             e.printStackTrace();
         }
 
-        return DowloadUtils.getRequest(url);
+        String reqResult = DowloadUtils.getRequest(url);
+        meetEvents = meetEventFromJSON(reqResult);
+
+        return meetEventFromJSON(reqResult);
     }
 
     @Override
-    protected void onPostExecute(String s) {
-
-        //Check link of parent & result
-        if (null != s && null != meetParent.get()) {
+    protected void onPostExecute(ArrayList<MeetEvent> meetEventsResult) {
+        if(meetParent.get() != null){
             MapsActivity mainActivity = meetParent.get();
-
-            mainActivity.addEventsToMap(s);
+            mainActivity.addEventsToMap(meetEventsResult);
         }
     }
 }

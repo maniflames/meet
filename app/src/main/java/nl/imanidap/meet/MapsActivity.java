@@ -23,7 +23,7 @@ public class MapsActivity extends FragmentActivity
 
     public static final String LOG = "thisapp";
     private GoogleMap mMap;
-    private RelativeLayout rlEventInfo ;
+    private RelativeLayout rlEventInfo;
     private TextView tvEventName;
     private TextView tvGroupName;
     private ArrayList<Marker> locations = new ArrayList<Marker>();
@@ -61,18 +61,13 @@ public class MapsActivity extends FragmentActivity
         mMap.setOnMarkerClickListener(this);
         mMap.setOnMapClickListener(this);
 
-        // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151);
-        Marker mark = mMap.addMarker(new MarkerOptions().position(sydney).title("Sydney"));
-        locations.add(mark);
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
-
+        //move camera to current position of user
+        //mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
     }
 
     @Override
     public boolean onMarkerClick(final Marker marker) {
-
-        showEventInfo();
+        showEventInfo(marker);
         return true;
     }
 
@@ -87,8 +82,11 @@ public class MapsActivity extends FragmentActivity
         hideEventInfo();
     }
 
-    private void showEventInfo(){
+    private void showEventInfo(Marker marker){
         Log.d(LOG, "Marker was clicked");
+        MeetEvent event = (MeetEvent) marker.getTag();
+        tvEventName.setText(event.getName());
+        tvGroupName.setText(event.getGroupName());
         rlEventInfo.setVisibility(View.VISIBLE);
     }
 
@@ -103,7 +101,17 @@ public class MapsActivity extends FragmentActivity
         startActivity( eventDetailIntent );
     }
 
-    public void addEventsToMap(String s){
-        tvGroupName.append(s);
+    public void addEventsToMap(ArrayList<MeetEvent> events){
+        for ( MeetEvent event : events ) {
+            //get latitude & longitude and create a new marker /w the MeetEvent as tag
+            Marker m = mMap.addMarker(new MarkerOptions()
+                    .position(new LatLng(event.getLatitude(), event.getLongitude()))
+            );
+            m.setTag(event);
+            locations.add(m);
+        }
+
+        LatLng firstEvent = new LatLng(events.get(0).getLatitude(), events.get(0).getLongitude());
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(firstEvent));
     }
 }
