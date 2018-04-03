@@ -22,11 +22,13 @@ public class MapsActivity extends FragmentActivity
         implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener, GoogleMap.OnMapClickListener, View.OnClickListener {
 
     public static final String LOG = "thisapp";
+    public static final String EVENT_DETAIL_DATA = "meetEvent";
     private GoogleMap mMap;
     private RelativeLayout rlEventInfo;
     private TextView tvEventName;
     private TextView tvGroupName;
     private ArrayList<Marker> locations = new ArrayList<Marker>();
+    private MeetEvent clickedEvent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +69,7 @@ public class MapsActivity extends FragmentActivity
 
     @Override
     public boolean onMarkerClick(final Marker marker) {
+        clickedEvent = (MeetEvent) marker.getTag();
         showEventInfo(marker);
         return true;
     }
@@ -98,7 +101,8 @@ public class MapsActivity extends FragmentActivity
     @Override
     public void onClick(View view) {
         Intent eventDetailIntent = new Intent(this, EventDetailActivity.class);
-        startActivity( eventDetailIntent );
+        eventDetailIntent.putExtra(EVENT_DETAIL_DATA, clickedEvent);
+        startActivity(eventDetailIntent);
     }
 
     public void addEventsToMap(ArrayList<MeetEvent> events){

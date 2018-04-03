@@ -1,23 +1,53 @@
 package nl.imanidap.meet;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
+import android.widget.TextView;
+
+import java.util.Date;
 
 public class EventDetailActivity extends AppCompatActivity {
 
+    private TextView tvEventName;
+    private TextView tvEventTime;
+    private TextView tvEventDescription;
+    private TextView tvGroupName;
+    private TextView tvRSVPCount;
+
+    private MeetEvent event;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_event_detail);
 
-        Log.d(MapsActivity.LOG, Secret.MEETUP_API_KEY);
+        Intent eventDetailIntent = getIntent();
+        event = (MeetEvent) eventDetailIntent.getSerializableExtra(MapsActivity.EVENT_DETAIL_DATA);
+
+        populateView();
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.event_detail_menu, menu);
         return true;
+    }
+
+    private void populateView(){
+        tvEventName = (TextView) findViewById(R.id.tv_event_name);
+        tvGroupName = (TextView) findViewById(R.id.tv_group_name);
+        tvEventDescription = (TextView) findViewById(R.id.tv_event_description);
+        tvEventTime = (TextView) findViewById(R.id.tv_time);
+        tvRSVPCount = (TextView) findViewById(R.id.tv_rsvp_count);
+
+        tvEventName.setText(event.getName());
+        tvGroupName.setText(event.getGroupName());
+        tvEventDescription.setText(event.getDescription());
+        tvEventTime.setText(new Date((long) event.getTime()).toString());
+
+        String rsvp = String.valueOf(event.getRsvpCount()) + " people are going!";
+        tvRSVPCount.setText(rsvp);
     }
 }

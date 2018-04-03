@@ -20,9 +20,11 @@
             android:id="@+id/tv_time"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="38dp"
             android:layout_marginStart="54dp"
             android:layout_marginTop="17dp"
-            android:text="Next Level Group"
+            android:text="12:15 AM"
+            app:layout_constraintBottom_toTopOf="@+id/tv_event_description"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/tv_event_name" />
 
@@ -30,9 +32,11 @@
             android:id="@+id/tv_event_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="17dp"
             android:layout_marginStart="54dp"
             android:layout_marginTop="62dp"
             android:text="Next Level Event"
+            app:layout_constraintBottom_toTopOf="@+id/tv_time"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -40,25 +44,17 @@
             android:id="@+id/tv_event_description"
             android:layout_width="322dp"
             android:layout_height="128dp"
-            android:layout_marginBottom="22dp"
+            android:layout_marginBottom="58dp"
             android:layout_marginEnd="31dp"
             android:layout_marginStart="31dp"
             android:layout_marginTop="39dp"
             android:text="This event is dope"
-            app:layout_constraintBottom_toTopOf="@+id/relativeLayout"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/tv_time" />
 
-        <RelativeLayout
-            android:id="@+id/relativeLayout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="188dp"
-            android:layout_marginTop="22dp"
-            app:layout_constraintBottom_toTopOf="@+id/tv_rsvp_count"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tv_event_description">
+
 
             <TextView
                 android:id="@+id/tv_group_name"
@@ -66,27 +62,20 @@
                 android:layout_height="wrap_content"
                 android:text="Brand New Guys" />
 
-            <TextView
-                android:id="@+id/tv_group_description"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_toRightOf="@+id/tv_group_name"
-                android:text="Group bla bla" />
-        </RelativeLayout>
 
         <TextView
             android:id="@+id/tv_rsvp_count"
             android:layout_width="180dp"
-            android:layout_height="70dp"
-            android:layout_marginBottom="271dp"
-            android:layout_marginEnd="101dp"
-            android:layout_marginStart="103dp"
-            android:layout_marginTop="33dp"
+            android:layout_height="0dp"
+            android:layout_marginBottom="16dp"
+            android:layout_marginEnd="102dp"
+            android:layout_marginStart="102dp"
+            android:layout_marginTop="9dp"
             android:text="RSVP: 18"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/relativeLayout" />
+            app:layout_constraintTop_toBottomOf="@+id/tv_event_description" />
 
     </android.support.constraint.ConstraintLayout>
 

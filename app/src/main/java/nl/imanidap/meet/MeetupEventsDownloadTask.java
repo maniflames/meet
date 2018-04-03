@@ -44,6 +44,9 @@ public class MeetupEventsDownloadTask extends AsyncTask<String, Void, ArrayList<
                     meetEvent.setGroupName(event.getJSONObject("group").getString("name"));
                     meetEvent.setLatitude(event.getJSONObject("venue").getDouble("lat"));
                     meetEvent.setLongitude(event.getJSONObject("venue").getDouble("lon"));
+                    meetEvent.setDescription(event.getString("description"));
+                    meetEvent.setTime(event.getInt("time"));
+                    meetEvent.setRsvpCount(event.getInt("yes_rsvp_count"));
 
                     meetEvents.add(meetEvent);
 
