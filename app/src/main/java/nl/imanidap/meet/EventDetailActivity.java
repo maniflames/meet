@@ -45,9 +45,19 @@ public class EventDetailActivity extends AppCompatActivity {
         tvEventName.setText(event.getName());
         tvGroupName.setText(event.getGroupName());
         tvEventDescription.setText(event.getDescription());
-        tvEventTime.setText(new Date((long) event.getTime()).toString());
 
-        String rsvp = String.valueOf(event.getRsvpCount()) + " people are going!";
+
+        tvEventTime.setText(new Date(event.getTime()).toString());
+
+        String rsvpSubstring;
+
+        if (event.getRsvpCount() == 1){
+            rsvpSubstring = " person is going!";
+        } else {
+            rsvpSubstring = " people are going!";
+        }
+
+        String rsvp = String.valueOf(event.getRsvpCount()) + rsvpSubstring;
         tvRSVPCount.setText(rsvp);
     }
 }

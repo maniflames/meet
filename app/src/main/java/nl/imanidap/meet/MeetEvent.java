@@ -12,7 +12,7 @@ public class MeetEvent implements Serializable {
     private String name;
     private Double latitude;
     private Double longitude;
-    private Integer time;
+    private Long time;
     private Integer rsvpCount;
     private String description;
 
@@ -48,11 +48,11 @@ public class MeetEvent implements Serializable {
         this.longitude = longitude;
     }
 
-    public Integer getTime() {
+    public Long getTime() {
         return time;
     }
 
-    public void setTime(Integer time) {
+    public void setTime(Long time) {
         this.time = time;
     }
 
