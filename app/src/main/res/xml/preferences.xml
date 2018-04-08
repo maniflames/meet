@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory
+        android:title="Type of Events"
+        android:key="pref_event_type">
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="pref_event_type_theater"
+            android:title="Theater and Arts" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="pref_event_type_literature"
+            android:title="Literature and Writing" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="pref_event_type_tech"
+            android:title="Tech and Engineering" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="pref_event_type_sports"
+            android:title="Sports and Movement" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="pref_event_type_spirituality"
+            android:title="Spirituality and Paranormal" />
+    </PreferenceCategory>
+</PreferenceScreen>

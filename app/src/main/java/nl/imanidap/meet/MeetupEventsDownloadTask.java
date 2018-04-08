@@ -40,12 +40,15 @@ public class MeetupEventsDownloadTask extends AsyncTask<URL, Void, ArrayList<Mee
 
                     MeetEvent meetEvent = new MeetEvent();
                     meetEvent.setName(event.getString("name"));
-                    meetEvent.setGroupName(event.getJSONObject("group").getString("name"));
-                    meetEvent.setLatitude(event.getJSONObject("venue").getDouble("lat"));
-                    meetEvent.setLongitude(event.getJSONObject("venue").getDouble("lon"));
+                    meetEvent.setGroupName(venue.getString("name"));
+                    meetEvent.setLatitude(venue.getDouble("lat"));
+                    meetEvent.setLongitude(venue.getDouble("lon"));
                     meetEvent.setDescription(event.getString("description"));
                     meetEvent.setTime(event.getLong("time"));
                     meetEvent.setRsvpCount(event.getInt("yes_rsvp_count"));
+
+                    //try catch img if no img, no worries it'll use a placeholder
+                    //so put the addition of the meetEvent in a finally block
 
                     meetEvents.add(meetEvent);
 
@@ -85,4 +88,5 @@ public class MeetupEventsDownloadTask extends AsyncTask<URL, Void, ArrayList<Mee
             mainActivity.addEventsToMap(meetEventsResult);
         }
     }
+
 }

@@ -10,9 +10,11 @@ import android.location.LocationManager;
 
 import android.net.Uri;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -32,8 +34,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 
-//Class will also be a location listener so real gps data can be requested
-public class MapsActivity extends FragmentActivity
+//changed to AppCompatActivity to show the actionbar
+public class MapsActivity extends AppCompatActivity
         implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener, GoogleMap.OnMapClickListener,
                     View.OnClickListener, OnSuccessListener<Location>, LocationListener {
 
@@ -72,8 +74,8 @@ public class MapsActivity extends FragmentActivity
             return;
         }
 
+        //create location manager for gps
         locationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
-
 
         rlEventInfo = findViewById(R.id.rl_event_info);
         tvEventName = findViewById(R.id.tv_event_name);
@@ -92,6 +94,20 @@ public class MapsActivity extends FragmentActivity
     protected void onDestroy() {
         super.onDestroy();
         locationManager.removeUpdates(this);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.actionbar, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        Intent intent = new Intent(this, SettingsActivity.class);
+        startActivity(intent);
+
+        return super.onOptionsItemSelected(item);
     }
 
     /**

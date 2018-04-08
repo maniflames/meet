@@ -25,17 +25,14 @@
             <TextView
                     android:id="@+id/tv_event_name"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="What's good" />
+                    android:layout_height="wrap_content" />
 
             <TextView
                 android:id="@+id/tv_group_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/tv_event_name"
-                android:text="Brand New Guys" />
+                android:layout_below="@+id/tv_event_name" />
 
         </RelativeLayout>
-
 
 </RelativeLayout>
