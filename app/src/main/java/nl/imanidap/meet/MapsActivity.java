@@ -8,6 +8,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 
+import android.net.Uri;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
@@ -27,12 +28,14 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 
 //Class will also be a location listener so real gps data can be requested
 public class MapsActivity extends FragmentActivity
         implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener, GoogleMap.OnMapClickListener,
-                    View.OnClickListener {
+                    View.OnClickListener, OnSuccessListener<Location>, LocationListener {
 
     public static final String LOG = "thisapp";
     public static final String EVENT_DETAIL_DATA = "meetEvent";
@@ -45,7 +48,6 @@ public class MapsActivity extends FragmentActivity
     private MeetEvent clickedEvent;
     private FusedLocationProviderClient mFusedLocationClient;
     private LocationManager locationManager;
-    private LocationListener locationListener;
     private Boolean firstLocationUpdate = true;
 
     @Override
@@ -70,35 +72,8 @@ public class MapsActivity extends FragmentActivity
             return;
         }
 
-        //create location manager
         locationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
 
-        //didn't succeed in turning the class into a location listener
-        //It has something to do with my google play services update or my imports
-        //it would be neat if I could fix that or put this in a separate class
-        locationListener = new LocationListener() {
-            public void onLocationChanged(Location location) {
-
-                if(firstLocationUpdate){
-                    Log.d(LOG, "New Location: " + location.toString());
-                    zoomToUserLocation(location);
-                    firstLocationUpdate = false;
-                }
-
-            }
-
-            public void onStatusChanged(String provider, int status, Bundle extras) {
-                Log.d(LOG, "status changed");
-            }
-
-            public void onProviderEnabled(String provider) {
-                Log.d(LOG, "provider enabled");
-            }
-
-            public void onProviderDisabled(String provider) {
-                Log.d(LOG, "provider disabled");
-            }
-        };
 
         rlEventInfo = findViewById(R.id.rl_event_info);
         tvEventName = findViewById(R.id.tv_event_name);
@@ -110,13 +85,13 @@ public class MapsActivity extends FragmentActivity
     @Override
     protected void onPause() {
         super.onPause();
-        locationManager.removeUpdates(locationListener);
+        locationManager.removeUpdates(this);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        locationManager.removeUpdates(locationListener);
+        locationManager.removeUpdates(this);
     }
 
     /**
@@ -171,43 +146,35 @@ public class MapsActivity extends FragmentActivity
     //https://developer.android.com/training/location/retrieve-current.html
     //https://developer.android.com/guide/topics/location/strategies.html#Updates
     private void getUserLocation(){
-
         //get users current location either through last known location or through live GPS
         try {
-             mFusedLocationClient.getLastLocation()
-             .addOnSuccessListener(this, new OnSuccessListener<Location>() {
-
-                @Override
-                public void onSuccess(Location location) {
-                    if (location != null) {
-                        // Logic to handle location object
-                        Log.d(LOG, "last known location is " + location.toString());
-                        zoomToUserLocation(location);
-                    } else {
-                        //for now log but in this case I should get the location myself
-                        Log.d(LOG, "No last known location");
-
-                        try {
-                            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
-                        } catch (SecurityException e) {
-                            e.printStackTrace();
-                        }
-
-                    }
-                }
-              });
-
+             mFusedLocationClient.getLastLocation().addOnSuccessListener(this, this);
         } catch (SecurityException e){
             e.printStackTrace();
         }
     }
 
-    private void zoomToUserLocation(Location location){
+    private void userLocationSuccess(Location location){
         LatLng user = new LatLng(location.getLatitude(), location.getLongitude());
         mMap.moveCamera(CameraUpdateFactory.newLatLng(user));
         mMap.moveCamera(CameraUpdateFactory.zoomTo(12));
 
-        new MeetupEventsDownloadTask(this).execute("");
+        //learned in android course
+        Uri builtUri = Uri.parse(DownloadUtils.MEETUP_EVENTS_BASE_URL).buildUpon()
+                .appendQueryParameter(DownloadUtils.KEY_PARAM, Secret.MEETUP_API_KEY)
+                .appendQueryParameter(DownloadUtils.SIGN_PARAM, DownloadUtils.SIGN_VALUE)
+                .appendQueryParameter(DownloadUtils.TEXT_FORMAT_PARAM, DownloadUtils.TEXT_FORMAT_VALUE)
+                .appendQueryParameter(DownloadUtils.CATEGORY_PARAM, "1,18")
+                .appendQueryParameter(DownloadUtils.LAT_PARAM, String.valueOf(location.getLatitude()))
+                .appendQueryParameter(DownloadUtils.LONG_PARAM, String.valueOf(location.getLongitude()))
+                .build();
+
+        try {
+            URL url = new URL(builtUri.toString());
+            new MeetupEventsDownloadTask(this).execute(url);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -242,9 +209,52 @@ public class MapsActivity extends FragmentActivity
 
             } else  {
                 Log.d(LOG, "App need location for basic functionality");
-                //this should eventually be a pop-up that then closes the app
+                //this should eventually be a dialoge that then closes the app
             }
         }
     }
 
+    @Override
+    public void onSuccess(Location location) {
+
+        if (location != null) {
+            // Logic to handle location object
+            Log.d(LOG, "last known location is " + location.toString());
+            userLocationSuccess(location);
+        } else {
+            //for now log but in this case I should get the location myself
+            Log.d(LOG, "No last known location");
+
+            try {
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+            } catch (SecurityException e) {
+                e.printStackTrace();
+            }
+
+        }
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        if(firstLocationUpdate){
+            Log.d(LOG, "New Location: " + location.toString());
+            userLocationSuccess(location);
+            firstLocationUpdate = false;
+        }
+    }
+
+    @Override
+    public void onStatusChanged(String s, int i, Bundle bundle) {
+        Log.d(LOG, "status changed");
+    }
+
+    @Override
+    public void onProviderEnabled(String s) {
+        Log.d(LOG, "provider enabled");
+    }
+
+    @Override
+    public void onProviderDisabled(String s) {
+        Log.d(LOG, "provider disabled");
+    }
 }

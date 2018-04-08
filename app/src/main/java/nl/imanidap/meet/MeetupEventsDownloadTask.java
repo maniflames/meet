@@ -1,7 +1,6 @@
 package nl.imanidap.meet;
 
 import android.os.AsyncTask;
-import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -18,7 +17,7 @@ import java.util.ArrayList;
  */
 
 
-public class MeetupEventsDownloadTask extends AsyncTask<String, Void, ArrayList<MeetEvent>>{
+public class MeetupEventsDownloadTask extends AsyncTask<URL, Void, ArrayList<MeetEvent>>{
     private WeakReference<MapsActivity> meetParent;
     private ArrayList<MeetEvent> meetEvents = new ArrayList<MeetEvent>();
 
@@ -66,15 +65,14 @@ public class MeetupEventsDownloadTask extends AsyncTask<String, Void, ArrayList<
 
     @Override
     //Void... voids < LOL
-    protected ArrayList<MeetEvent> doInBackground(String... voids) {
-        URL url = null;
-        try {
-            url = new URL(DowloadUtils.TEST_URL);
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
+    protected ArrayList<MeetEvent> doInBackground(URL... urls) {
+        if(urls[0] == null){
+            return new ArrayList<MeetEvent>();
         }
 
-        String reqResult = DowloadUtils.getRequest(url);
+        URL url = urls[0];
+
+        String reqResult = DownloadUtils.getRequest(url);
         meetEvents = meetEventFromJSON(reqResult);
 
         return meetEventFromJSON(reqResult);
