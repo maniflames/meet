@@ -13,17 +13,6 @@ import java.util.Scanner;
  */
 
 public class DownloadUtils {
-    public static final String TEST_URL = "https://api.meetup.com/2/concierge?key=" + Secret.MEETUP_API_KEY + "&sign=true&category_id=1,18&text_format=plain";
-    public static final String MEETUP_EVENTS_BASE_URL = "https://api.meetup.com/2/concierge";
-    public static final String KEY_PARAM = "key";
-    public static final String SIGN_PARAM = "sign";
-    public static final String SIGN_VALUE = "true";
-    public static final String CATEGORY_PARAM = "category_id";
-    public static final String TEXT_FORMAT_PARAM = "text_format";
-    public static final String TEXT_FORMAT_VALUE = "plain";
-    public static final String LAT_PARAM = "lat";
-    public static final String LONG_PARAM = "lon";
-
 
     public static String getRequest(URL url){
 

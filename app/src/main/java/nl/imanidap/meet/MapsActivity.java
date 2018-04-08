@@ -9,6 +9,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 
 import android.net.Uri;
+import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -57,6 +58,9 @@ public class MapsActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
+        //Set default values if user enters app for the first time
+        PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -94,6 +98,12 @@ public class MapsActivity extends AppCompatActivity
     protected void onDestroy() {
         super.onDestroy();
         locationManager.removeUpdates(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        getUserLocation();
     }
 
     @Override
@@ -175,14 +185,16 @@ public class MapsActivity extends AppCompatActivity
         mMap.moveCamera(CameraUpdateFactory.newLatLng(user));
         mMap.moveCamera(CameraUpdateFactory.zoomTo(12));
 
-        //learned in android course
-        Uri builtUri = Uri.parse(DownloadUtils.MEETUP_EVENTS_BASE_URL).buildUpon()
-                .appendQueryParameter(DownloadUtils.KEY_PARAM, Secret.MEETUP_API_KEY)
-                .appendQueryParameter(DownloadUtils.SIGN_PARAM, DownloadUtils.SIGN_VALUE)
-                .appendQueryParameter(DownloadUtils.TEXT_FORMAT_PARAM, DownloadUtils.TEXT_FORMAT_VALUE)
-                .appendQueryParameter(DownloadUtils.CATEGORY_PARAM, "1,18")
-                .appendQueryParameter(DownloadUtils.LAT_PARAM, String.valueOf(location.getLatitude()))
-                .appendQueryParameter(DownloadUtils.LONG_PARAM, String.valueOf(location.getLongitude()))
+        String categories = new MeetupEventsDownloadTask(this).getMeetupCategoriesFromUserPreferences();
+        Log.d(LOG, categories);
+
+        Uri builtUri = Uri.parse(MeetupEventsDownloadTask.MEETUP_EVENTS_BASE_URL).buildUpon()
+                .appendQueryParameter(MeetupEventsDownloadTask.KEY_PARAM, Secret.MEETUP_API_KEY)
+                .appendQueryParameter(MeetupEventsDownloadTask.SIGN_PARAM, MeetupEventsDownloadTask.SIGN_VALUE)
+                .appendQueryParameter(MeetupEventsDownloadTask.TEXT_FORMAT_PARAM, MeetupEventsDownloadTask.TEXT_FORMAT_VALUE)
+                .appendQueryParameter(MeetupEventsDownloadTask.CATEGORY_PARAM, categories)
+                .appendQueryParameter(MeetupEventsDownloadTask.LAT_PARAM, String.valueOf(location.getLatitude()))
+                .appendQueryParameter(MeetupEventsDownloadTask.LONG_PARAM, String.valueOf(location.getLongitude()))
                 .build();
 
         try {
@@ -192,7 +204,6 @@ public class MapsActivity extends AppCompatActivity
             e.printStackTrace();
         }
     }
-
 
     @Override
     public void onClick(View view) {

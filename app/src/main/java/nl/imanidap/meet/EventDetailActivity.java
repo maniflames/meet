@@ -39,7 +39,7 @@ public class EventDetailActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         Intent intent = new Intent(this, SettingsActivity.class);
         startActivity(intent);
-        
+
         return super.onOptionsItemSelected(item);
     }
 
