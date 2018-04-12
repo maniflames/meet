@@ -79,7 +79,6 @@ public class MeetupEventsDownloadTask extends AsyncTask<URL, Void, ArrayList<Mee
 
 
     @Override
-    //Void... voids < LOL
     protected ArrayList<MeetEvent> doInBackground(URL... urls) {
         if(urls[0] == null){
             return new ArrayList<MeetEvent>();

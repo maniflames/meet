@@ -34,24 +34,23 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Date;
 
 //changed to AppCompatActivity to show the actionbar
 public class MapsActivity extends AppCompatActivity
         implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener, GoogleMap.OnMapClickListener,
-                    View.OnClickListener, OnSuccessListener<Location>, LocationListener {
+                    View.OnClickListener, LocationHandlerCallback {
 
     public static final String LOG = "thisapp";
     public static final String EVENT_DETAIL_DATA = "meetEvent";
-    public static final int LOCATION_REQUEST_CODE = 5;
+
     private GoogleMap mMap;
     private RelativeLayout rlEventInfo;
     private TextView tvEventName;
     private TextView tvGroupName;
     private ArrayList<Marker> locations = new ArrayList<Marker>();
     private MeetEvent clickedEvent;
-    private FusedLocationProviderClient mFusedLocationClient;
-    private LocationManager locationManager;
-    private Boolean firstLocationUpdate = true;
+    private LocationHandler locationHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,20 +65,8 @@ public class MapsActivity extends AppCompatActivity
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        //make sure you can get the last known location
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-
-
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            
-            String[] wantedPermissions = { Manifest.permission.ACCESS_FINE_LOCATION };
-            ActivityCompat.requestPermissions(this, wantedPermissions, LOCATION_REQUEST_CODE);
-
-            return;
-        }
-
-        //create location manager for gps
-        locationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
+        locationHandler = new LocationHandler(this, this);
+        locationHandler.checkLocationPermissions();
 
         rlEventInfo = findViewById(R.id.rl_event_info);
         tvEventName = findViewById(R.id.tv_event_name);
@@ -91,19 +78,19 @@ public class MapsActivity extends AppCompatActivity
     @Override
     protected void onPause() {
         super.onPause();
-        locationManager.removeUpdates(this);
+        locationHandler.removeUpdates();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        locationManager.removeUpdates(this);
+        locationHandler.removeUpdates();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        getUserLocation();
+        locationHandler.getUserLocation();
     }
 
     @Override
@@ -135,11 +122,11 @@ public class MapsActivity extends AppCompatActivity
         mMap.setOnMarkerClickListener(this);
         mMap.setOnMapClickListener(this);
 
-        getUserLocation();
     }
 
     @Override
     public boolean onMarkerClick(final Marker marker) {
+        //asyncTask get Image
         clickedEvent = (MeetEvent) marker.getTag();
         showEventInfo(marker);
         return true;
@@ -169,42 +156,6 @@ public class MapsActivity extends AppCompatActivity
         rlEventInfo.setVisibility(View.GONE);
     }
 
-    //https://developer.android.com/training/location/retrieve-current.html
-    //https://developer.android.com/guide/topics/location/strategies.html#Updates
-    private void getUserLocation(){
-        //get users current location either through last known location or through live GPS
-        try {
-             mFusedLocationClient.getLastLocation().addOnSuccessListener(this, this);
-        } catch (SecurityException e){
-            e.printStackTrace();
-        }
-    }
-
-    private void userLocationSuccess(Location location){
-        LatLng user = new LatLng(location.getLatitude(), location.getLongitude());
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(user));
-        mMap.moveCamera(CameraUpdateFactory.zoomTo(12));
-
-        String categories = new MeetupEventsDownloadTask(this).getMeetupCategoriesFromUserPreferences();
-        Log.d(LOG, categories);
-
-        Uri builtUri = Uri.parse(MeetupEventsDownloadTask.MEETUP_EVENTS_BASE_URL).buildUpon()
-                .appendQueryParameter(MeetupEventsDownloadTask.KEY_PARAM, Secret.MEETUP_API_KEY)
-                .appendQueryParameter(MeetupEventsDownloadTask.SIGN_PARAM, MeetupEventsDownloadTask.SIGN_VALUE)
-                .appendQueryParameter(MeetupEventsDownloadTask.TEXT_FORMAT_PARAM, MeetupEventsDownloadTask.TEXT_FORMAT_VALUE)
-                .appendQueryParameter(MeetupEventsDownloadTask.CATEGORY_PARAM, categories)
-                .appendQueryParameter(MeetupEventsDownloadTask.LAT_PARAM, String.valueOf(location.getLatitude()))
-                .appendQueryParameter(MeetupEventsDownloadTask.LONG_PARAM, String.valueOf(location.getLongitude()))
-                .build();
-
-        try {
-            URL url = new URL(builtUri.toString());
-            new MeetupEventsDownloadTask(this).execute(url);
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
-    }
-
     @Override
     public void onClick(View view) {
         Intent eventDetailIntent = new Intent(this, EventDetailActivity.class);
@@ -227,61 +178,48 @@ public class MapsActivity extends AppCompatActivity
     }
 
     public void onRequestPermissionsResult (int requestCode, String[] permissions, int[] grantResults) {
-        if(requestCode == LOCATION_REQUEST_CODE){
+        if(requestCode == LocationHandler.LOCATION_REQUEST_CODE){
             //I know I asked for one permission so I can just grab the first and check it
             if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
-                //get user location and zoom
                 Log.d(LOG, "yaay, permission granted");
-                //do the user location function
 
             } else  {
                 Log.d(LOG, "App need location for basic functionality");
-                //this should eventually be a dialoge that then closes the app
+                //TODO: this should eventually be a dialoge that then closes the app
             }
         }
     }
 
     @Override
-    public void onSuccess(Location location) {
+    public void onUserLocationSuccess(Location location) {
+        zoomInOnUser(location);
+        requestMeetEvents(location);
+    }
 
-        if (location != null) {
-            // Logic to handle location object
-            Log.d(LOG, "last known location is " + location.toString());
-            userLocationSuccess(location);
-        } else {
-            //for now log but in this case I should get the location myself
-            Log.d(LOG, "No last known location");
+    public void zoomInOnUser(Location location){
+        LatLng user = new LatLng(location.getLatitude(), location.getLongitude());
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(user));
+        mMap.moveCamera(CameraUpdateFactory.zoomTo(12));
+    }
 
-            try {
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
-            } catch (SecurityException e) {
-                e.printStackTrace();
-            }
+    public void requestMeetEvents(Location location){
+        String categories = new MeetupEventsDownloadTask(this).getMeetupCategoriesFromUserPreferences();
+        Log.d(MapsActivity.LOG, categories);
 
+        Uri builtUri = Uri.parse(MeetupEventsDownloadTask.MEETUP_EVENTS_BASE_URL).buildUpon()
+                .appendQueryParameter(MeetupEventsDownloadTask.KEY_PARAM, Secret.MEETUP_API_KEY)
+                .appendQueryParameter(MeetupEventsDownloadTask.SIGN_PARAM, MeetupEventsDownloadTask.SIGN_VALUE)
+                .appendQueryParameter(MeetupEventsDownloadTask.TEXT_FORMAT_PARAM, MeetupEventsDownloadTask.TEXT_FORMAT_VALUE)
+                .appendQueryParameter(MeetupEventsDownloadTask.CATEGORY_PARAM, categories)
+                .appendQueryParameter(MeetupEventsDownloadTask.LAT_PARAM, String.valueOf(location.getLatitude()))
+                .appendQueryParameter(MeetupEventsDownloadTask.LONG_PARAM, String.valueOf(location.getLongitude()))
+                .build();
+
+        try {
+            URL url = new URL(builtUri.toString());
+            new MeetupEventsDownloadTask(this).execute(url);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
         }
-    }
-
-    @Override
-    public void onLocationChanged(Location location) {
-        if(firstLocationUpdate){
-            Log.d(LOG, "New Location: " + location.toString());
-            userLocationSuccess(location);
-            firstLocationUpdate = false;
-        }
-    }
-
-    @Override
-    public void onStatusChanged(String s, int i, Bundle bundle) {
-        Log.d(LOG, "status changed");
-    }
-
-    @Override
-    public void onProviderEnabled(String s) {
-        Log.d(LOG, "provider enabled");
-    }
-
-    @Override
-    public void onProviderDisabled(String s) {
-        Log.d(LOG, "provider disabled");
     }
 }
