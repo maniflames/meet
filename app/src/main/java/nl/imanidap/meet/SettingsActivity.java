@@ -1,6 +1,7 @@
 package nl.imanidap.meet;
 
 import android.app.Activity;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -33,6 +34,5 @@ public class SettingsActivity extends Activity {
         super.onCreate(savedInstanceState);
 
        getFragmentManager().beginTransaction().replace(android.R.id.content, new SettingsFragment(this)).commit();
-
     }
 }

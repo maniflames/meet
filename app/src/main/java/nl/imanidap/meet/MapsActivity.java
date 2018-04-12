@@ -1,16 +1,11 @@
 package nl.imanidap.meet;
 
-import android.Manifest;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 
 import android.net.Uri;
 import android.preference.PreferenceManager;
-import android.support.v4.app.ActivityCompat;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -20,8 +15,6 @@ import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -29,12 +22,10 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Date;
 
 //changed to AppCompatActivity to show the actionbar
 public class MapsActivity extends AppCompatActivity
@@ -51,6 +42,8 @@ public class MapsActivity extends AppCompatActivity
     private ArrayList<Marker> locations = new ArrayList<Marker>();
     private MeetEvent clickedEvent;
     private LocationHandler locationHandler;
+    private Location userLocation;
+    public static Boolean settingsChanged = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,8 +83,12 @@ public class MapsActivity extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
-        Log.d(LOG, "resume");
         locationHandler.getUserLocation();
+        if(userLocation != null && settingsChanged){
+            requestMeetEvents(userLocation);
+            settingsChanged = false;
+        }
+
     }
 
     @Override
@@ -194,35 +191,38 @@ public class MapsActivity extends AppCompatActivity
 
     @Override
     public void onUserLocationSuccess(Location location) {
+        userLocation = location;
         zoomInOnUser(location);
         requestMeetEvents(location);
     }
 
-    public void zoomInOnUser(Location location){
+    private void zoomInOnUser(Location location){
         LatLng user = new LatLng(location.getLatitude(), location.getLongitude());
         mMap.moveCamera(CameraUpdateFactory.newLatLng(user));
         mMap.moveCamera(CameraUpdateFactory.zoomTo(11));
     }
 
     public void requestMeetEvents(Location location){
+        Log.d(LOG, "request new events");
         String categories = new MeetupEventsDownloadTask(this).getMeetupCategoriesFromUserPreferences();
         Log.d(MapsActivity.LOG, categories);
 
 
-        Uri builtUri = Uri.parse(MeetupEventsDownloadTask.MEETUP_EVENTS_BASE_URL).buildUpon()
+
+        Uri.Builder uriBuilder = Uri.parse(MeetupEventsDownloadTask.MEETUP_EVENTS_BASE_URL).buildUpon()
                 .appendQueryParameter(MeetupEventsDownloadTask.KEY_PARAM, Secret.MEETUP_API_KEY)
                 .appendQueryParameter(MeetupEventsDownloadTask.SIGN_PARAM, MeetupEventsDownloadTask.SIGN_VALUE)
                 .appendQueryParameter(MeetupEventsDownloadTask.TEXT_FORMAT_PARAM, MeetupEventsDownloadTask.TEXT_FORMAT_VALUE)
                 .appendQueryParameter(MeetupEventsDownloadTask.LAT_PARAM, String.valueOf(location.getLatitude()))
-                .appendQueryParameter(MeetupEventsDownloadTask.LONG_PARAM, String.valueOf(location.getLongitude()))
-                .build();
+                .appendQueryParameter(MeetupEventsDownloadTask.LONG_PARAM, String.valueOf(location.getLongitude()));
 
         if(categories.length() > 0 ){
-            builtUri.buildUpon().appendQueryParameter(MeetupEventsDownloadTask.CATEGORY_PARAM, categories).build();
+            uriBuilder.appendQueryParameter(MeetupEventsDownloadTask.CATEGORY_PARAM, categories).build();
         }
 
         try {
-            URL url = new URL(builtUri.toString());
+            URL url = new URL(uriBuilder.build().toString());
+            Log.d(LOG, url.toString());
             new MeetupEventsDownloadTask(this).execute(url);
         } catch (MalformedURLException e) {
             e.printStackTrace();

@@ -5,14 +5,9 @@ import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
-import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
-import android.util.Log;
-import android.view.View;
-import android.widget.Toast;
 
 import java.lang.ref.WeakReference;
-import java.util.Map;
 
 /**
  * Created by maniflames on 08/04/2018.
@@ -20,7 +15,7 @@ import java.util.Map;
 
 //suppressing linter to pass a reference to an activity to get a preference manager
 @SuppressLint("ValidFragment")
-public class SettingsFragment extends PreferenceFragment {
+public class SettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
     private WeakReference<Activity> activity;
     SettingsFragment(Activity a){
         activity = new WeakReference<Activity>(a);
@@ -31,5 +26,22 @@ public class SettingsFragment extends PreferenceFragment {
         super.onCreate(savedInstanceState);
 
         addPreferencesFromResource(R.xml.preferences);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
+        MapsActivity.settingsChanged = true;
     }
 }
