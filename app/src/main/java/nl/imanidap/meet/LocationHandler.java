@@ -77,7 +77,7 @@ public class LocationHandler implements LocationListener {
 
     @Override
     public void onStatusChanged(String s, int i, Bundle bundle) {
-        Log.d(MapsActivity.LOG, "status changed");
+        Log.d(MapsActivity.LOG, "status changed: provider " + s);
     }
 
     @Override
