@@ -1,10 +1,10 @@
 package nl.imanidap.meet;
 
 import android.app.Activity;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.Preference;
 import android.support.annotation.Nullable;
+import android.util.Log;
+import android.view.View;
 
 /**
  * Created by maniflames on 08/04/2018.
@@ -32,7 +32,7 @@ public class SettingsActivity extends Activity {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-       getFragmentManager().beginTransaction().replace(android.R.id.content, new SettingsFragment()).commit();
+       getFragmentManager().beginTransaction().replace(android.R.id.content, new SettingsFragment(this)).commit();
 
     }
 }

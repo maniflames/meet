@@ -90,6 +90,7 @@ public class MapsActivity extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
+        Log.d(LOG, "resume");
         locationHandler.getUserLocation();
     }
 
@@ -102,6 +103,7 @@ public class MapsActivity extends AppCompatActivity
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         Intent intent = new Intent(this, SettingsActivity.class);
+
         startActivity(intent);
 
         return super.onOptionsItemSelected(item);
@@ -199,21 +201,25 @@ public class MapsActivity extends AppCompatActivity
     public void zoomInOnUser(Location location){
         LatLng user = new LatLng(location.getLatitude(), location.getLongitude());
         mMap.moveCamera(CameraUpdateFactory.newLatLng(user));
-        mMap.moveCamera(CameraUpdateFactory.zoomTo(12));
+        mMap.moveCamera(CameraUpdateFactory.zoomTo(11));
     }
 
     public void requestMeetEvents(Location location){
         String categories = new MeetupEventsDownloadTask(this).getMeetupCategoriesFromUserPreferences();
         Log.d(MapsActivity.LOG, categories);
 
+
         Uri builtUri = Uri.parse(MeetupEventsDownloadTask.MEETUP_EVENTS_BASE_URL).buildUpon()
                 .appendQueryParameter(MeetupEventsDownloadTask.KEY_PARAM, Secret.MEETUP_API_KEY)
                 .appendQueryParameter(MeetupEventsDownloadTask.SIGN_PARAM, MeetupEventsDownloadTask.SIGN_VALUE)
                 .appendQueryParameter(MeetupEventsDownloadTask.TEXT_FORMAT_PARAM, MeetupEventsDownloadTask.TEXT_FORMAT_VALUE)
-                .appendQueryParameter(MeetupEventsDownloadTask.CATEGORY_PARAM, categories)
                 .appendQueryParameter(MeetupEventsDownloadTask.LAT_PARAM, String.valueOf(location.getLatitude()))
                 .appendQueryParameter(MeetupEventsDownloadTask.LONG_PARAM, String.valueOf(location.getLongitude()))
                 .build();
+
+        if(categories.length() > 0 ){
+            builtUri.buildUpon().appendQueryParameter(MeetupEventsDownloadTask.CATEGORY_PARAM, categories).build();
+        }
 
         try {
             URL url = new URL(builtUri.toString());

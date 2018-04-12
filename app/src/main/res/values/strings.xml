@@ -2,4 +2,5 @@
     <string name="app_name">Meet</string>
     <string name="title_activity_maps">Map</string>
     <string name="menu_preferences">Settings</string>
+    <string name="settings_category_warning">At least one category has to be selected</string>
 </resources>
