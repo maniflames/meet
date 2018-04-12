@@ -1,5 +1,7 @@
 package nl.imanidap.meet;
 
+import android.graphics.Bitmap;
+
 import java.io.Serializable;
 
 /**
@@ -15,6 +17,7 @@ public class MeetEvent implements Serializable {
     private Long time;
     private Integer rsvpCount;
     private String description;
+    private String imageUrl;
 
     public String getName() {
         return name;
@@ -70,6 +73,14 @@ public class MeetEvent implements Serializable {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
 }

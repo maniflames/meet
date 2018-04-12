@@ -1,5 +1,7 @@
 package nl.imanidap.meet;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.util.Log;
 
 import java.io.IOException;
@@ -40,6 +42,29 @@ public class DownloadUtils {
             return json.toString();
 
         } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            cURL.disconnect();
+        }
+
+        return null;
+    }
+
+    public static Bitmap getRequestImage(URL url){
+        HttpURLConnection cURL = null;
+        try {
+            cURL = (HttpURLConnection) url.openConnection();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        InputStream in = null;
+        try {
+            in = cURL.getInputStream();
+            Bitmap mBitmap = BitmapFactory.decodeStream(in);
+            return mBitmap;
+
+        } catch (Exception e) {
             e.printStackTrace();
         } finally {
             cURL.disconnect();

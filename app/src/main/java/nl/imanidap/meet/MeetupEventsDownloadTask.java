@@ -59,10 +59,13 @@ public class MeetupEventsDownloadTask extends AsyncTask<URL, Void, ArrayList<Mee
                     meetEvent.setTime(event.getLong("time"));
                     meetEvent.setRsvpCount(event.getInt("yes_rsvp_count"));
 
-                    //try catch img if no img, no worries it'll use a placeholder
-                    //so put the addition of the meetEvent in a finally block
-
-                    meetEvents.add(meetEvent);
+                    try {
+                        meetEvent.setImageUrl(event.getString("photo_url"));
+                    } catch (Exception e){
+                        Log.d(MapsActivity.LOG, "no image found");
+                    } finally {
+                        meetEvents.add(meetEvent);
+                    }
 
                 } catch (JSONException e) {
                     e.printStackTrace();

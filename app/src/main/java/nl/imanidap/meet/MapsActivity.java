@@ -2,6 +2,7 @@ package nl.imanidap.meet;
 
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.location.Location;
 
 import android.net.Uri;
@@ -12,6 +13,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -30,7 +32,7 @@ import java.util.ArrayList;
 //changed to AppCompatActivity to show the actionbar
 public class MapsActivity extends AppCompatActivity
         implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener, GoogleMap.OnMapClickListener,
-                    View.OnClickListener, LocationHandlerCallback {
+                    View.OnClickListener, LocationHandlerCallback, MeetupImageDownloadCallback {
 
     public static final String LOG = "thisapp";
     public static final String EVENT_DETAIL_DATA = "meetEvent";
@@ -125,8 +127,8 @@ public class MapsActivity extends AppCompatActivity
 
     @Override
     public boolean onMarkerClick(final Marker marker) {
-        //asyncTask get Image
         clickedEvent = (MeetEvent) marker.getTag();
+        new MeetupImageDownloadTask(this).execute(clickedEvent);
         showEventInfo(marker);
         return true;
     }
@@ -226,6 +228,17 @@ public class MapsActivity extends AppCompatActivity
             new MeetupEventsDownloadTask(this).execute(url);
         } catch (MalformedURLException e) {
             e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void loadImagePreview(Bitmap b){
+        ImageView img = (ImageView) findViewById(R.id.iv_preview_image);
+
+        if(b != null) {
+            img.setImageBitmap(b);
+        } else {
+            img.setImageDrawable(getDrawable(R.drawable.steak));
         }
     }
 }

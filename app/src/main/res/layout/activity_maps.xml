@@ -22,16 +22,34 @@
             android:background="#FFF"
             android:visibility="gone">
 
-            <TextView
-                    android:id="@+id/tv_event_name"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+            <ImageView
+                android:id="@+id/iv_preview_image"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:src="@drawable/steak"
+                android:adjustViewBounds= "true"
+                android:maxHeight="50dp"
+                android:maxWidth="50dp"
+                android:layout_margin="15dp"
+                />
 
             <TextView
+                    android:layout_toEndOf="@id/iv_preview_image"
+                    android:id="@+id/tv_event_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="10dp"
+                    android:textStyle="bold"
+                    android:textSize="16sp"/>
+
+            <TextView
+                android:layout_toEndOf="@id/iv_preview_image"
                 android:id="@+id/tv_group_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/tv_event_name" />
+                android:layout_below="@+id/tv_event_name"
+                android:paddingBottom="10dp"
+                android:textSize="12sp"/>
 
         </RelativeLayout>
 
