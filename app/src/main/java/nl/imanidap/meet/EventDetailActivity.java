@@ -2,6 +2,8 @@ package nl.imanidap.meet;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -78,9 +80,65 @@ public class EventDetailActivity extends AppCompatActivity implements MeetupImag
         ImageView img = (ImageView) findViewById(R.id.iv_preview_image);
 
         if(b != null) {
-            img.setImageBitmap(b);
+
+            Bitmap filter = Bitmap.createBitmap(b.getWidth(), b.getHeight(), Bitmap.Config.ARGB_8888);
+            filter.setHasAlpha(true);
+
+            Canvas canvas = new Canvas(filter);
+            //TODO: This could be different depenting on the theme
+            int lightColor = Color.argb(255, 106, 17, 203);
+            int darkColor = Color.argb(255, 37, 117, 252);
+
+            filter = this.duoToneFilter(b, filter, lightColor, darkColor);
+
+            canvas.drawBitmap(filter, 0, 0, null);
+            img.setImageBitmap(filter);
+
         } else {
             img.setImageDrawable(getDrawable(R.drawable.steak));
+            img.setPadding(25,0,25,0);
         }
     }
+
+    //Algorithm Concept: https://stackoverflow.com/questions/2442391/computer-graphics-programatically-create-duotone-or-separations
+    private Bitmap duoToneFilter(Bitmap b, Bitmap filter, int colorLight, int colorDark){
+        for(int x = 0; x < b.getWidth(); x++){
+            for(int y = 0; y < b.getHeight(); y++){
+
+                int originalPixel = b.getPixel(x, y);
+                int red = Color.red(originalPixel);
+                int green = Color.green(originalPixel);
+                int blue = Color.blue(originalPixel);
+
+                int gray = (red + green + blue) / 3;
+                double relativeGray = (double)gray / (double)255;
+
+                int tone;
+
+                if(relativeGray < 0.3) {
+                    tone = colorLight;
+
+                } else if (relativeGray >= 0.3 && relativeGray < 0.7){
+                    int mixRed = (Color.red(colorLight) + Color.red(colorDark)) / 2;
+                    int mixGreen = (Color.green(colorLight) + Color.green(colorDark)) / 2;
+                    int mixBlue = (Color.blue(colorLight) + Color.blue(colorDark)) / 2;
+
+                    tone = Color.argb(255, mixRed, mixGreen, mixBlue);
+
+                } else {
+                    tone = colorDark;
+                }
+
+                int toneRed = (int)Math.round((relativeGray * (double)Color.red(tone)));
+                int toneGreen = (int)Math.round((relativeGray * (double)Color.green(tone)));
+                int toneBlue = (int)Math.round((relativeGray * (double)Color.blue(tone)));
+
+
+                filter.setPixel(x, y, Color.argb(255, toneRed, toneGreen, toneBlue));
+            }
+        }
+
+        return filter;
+    }
+
 }
