@@ -13,11 +13,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <nl.imanidap.meet.ImageWithFilterView
-            android:id="@+id/image_view_filter"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent" />
-
         <ImageView
             android:id="@+id/iv_preview_image"
             android:layout_width="fill_parent"
@@ -26,7 +21,6 @@
             android:adjustViewBounds="true"
             android:scaleType="centerCrop"
             android:src="@drawable/steak"
-            android:layout_below="@+id/image_view_filter"
             />
 
         <TextView

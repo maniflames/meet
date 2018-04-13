@@ -1,14 +1,13 @@
 package nl.imanidap.meet;
 
 import android.app.Activity;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.util.Log;
-import android.view.View;
 
 /**
- * Created by maniflames on 08/04/2018.
+ * SettingsActivity
+ *
+ * This activity loads the SettingsFragment and holds some values that have to do with storing user permissions
  */
 
 public class SettingsActivity extends Activity {
@@ -29,6 +28,15 @@ public class SettingsActivity extends Activity {
     public static final Boolean DEFAULT_TYPE_SPIRITUALITY= false;
     public static final String CATEGORY_IDS_SPIRITUALITY = "22,24";
 
+    /**
+     * onCreate
+     *
+     * The SettingsFragment is loaded
+     *
+     * @param savedInstanceState
+     *      Parameters are inserted by the framework
+     * @see SettingsFragment
+     */
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

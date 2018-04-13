@@ -6,12 +6,19 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.Date;
+
+/**
+ * EvenDetailActivity
+ *
+ * This Activitiy shows an event in detail.
+ */
 
 public class EventDetailActivity extends AppCompatActivity implements MeetupImageDownloadCallback{
 
@@ -20,8 +27,18 @@ public class EventDetailActivity extends AppCompatActivity implements MeetupImag
     private TextView tvEventDescription;
     private TextView tvGroupName;
     private TextView tvRSVPCount;
-
     private MeetEvent event;
+
+    /**
+     * onCreate
+     *
+     * Android Hook method, performed when the activity is created.
+     * The layout is set, eventData received from an intent and the image downloaded
+     *
+     * @param savedInstanceState
+     *      Parameters are inserted by the framework
+     */
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -35,19 +52,11 @@ public class EventDetailActivity extends AppCompatActivity implements MeetupImag
         populateView();
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.actionbar, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        Intent intent = new Intent(this, SettingsActivity.class);
-        startActivity(intent);
-
-        return super.onOptionsItemSelected(item);
-    }
+    /**
+     * populateView
+     *
+     * A method that inserts the event data into the views of the layout
+     */
 
     private void populateView(){
         tvEventName = (TextView) findViewById(R.id.tv_event_name);
@@ -75,6 +84,71 @@ public class EventDetailActivity extends AppCompatActivity implements MeetupImag
         tvRSVPCount.setText(rsvp);
     }
 
+
+    /**
+     * onCreateOptionsMenu
+     *
+     * Android Hook Method, performed when the options menu is created
+     * This is where the actionbar menu from the resources is loaded into the layout
+     *
+     * @param menu
+     *      Parameters are inserted by the framework, The menu
+     *
+     * @return true
+     *      indicates we want to override the default behaviour
+     *
+     */
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.actionbar, menu);
+        return true;
+    }
+
+
+
+    /**
+     * onOptionsItemSelected
+     *
+     * Android Hook Method, performed when an item on the actionbar is clicked.
+     * This is where in intent towards the SettingsActivity is send.
+     *
+     * @param item
+     *      Parameters are inserted by the framework, The selected menu item
+     *
+     * @return
+     *      Indicates we want to override the default behaviour
+     *
+     * @See SettingsActivity
+     *      The activity that is requested by the intent
+     */
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if(item.getItemId() == R.id.open_preferences){
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
+        } else {
+            finish();
+        }
+
+        return true;
+    }
+
+
+    /**
+     * loadImagePreview
+     *
+     * Implementation of MeetupImageDownloadCallback. This method is performed by the
+     * MeetupImageDownloadTask. In this method the image is being replaced by a canvas with a filtered
+     * version of the image is drawn on the canvas and put in the layout.
+     *
+     * @param b
+     *      The bitmap returned by the MeetupImageDownloadTask
+     *
+     * @see MeetupImageDownloadTask
+     */
+
     @Override
     public void loadImagePreview(Bitmap b){
         ImageView img = (ImageView) findViewById(R.id.iv_preview_image);
@@ -100,7 +174,30 @@ public class EventDetailActivity extends AppCompatActivity implements MeetupImag
         }
     }
 
-    //Algorithm Concept: https://stackoverflow.com/questions/2442391/computer-graphics-programatically-create-duotone-or-separations
+
+
+    /**
+     * duoToneFilter
+     *
+     * The filter used over the images.
+     *
+     * @param b
+     *      A bitmap of the original image
+     * @param filter
+     *      An empty bitmap that can be used to put in the new pixels
+     *      (Make sure setHasAlpha is true)
+     * @param colorLight
+     *      The lightest color in the duoTone combination. An int containing the color value.
+     * @param colorDark
+     *      The darkest color in the duoTone combination. An int containing the color value.
+     *
+     * @return filter
+     *      A bitmap with the filtered image
+     *
+     * @credits Duotone Algorithm concept
+     * https://stackoverflow.com/questions/2442391/computer-graphics-programatically-create-duotone-or-separations
+     */
+
     private Bitmap duoToneFilter(Bitmap b, Bitmap filter, int colorLight, int colorDark){
         for(int x = 0; x < b.getWidth(); x++){
             for(int y = 0; y < b.getHeight(); y++){

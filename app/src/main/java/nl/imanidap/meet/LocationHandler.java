@@ -20,7 +20,9 @@ import java.lang.ref.WeakReference;
 
 
 /**
- * Created by maniflames on 12/04/2018.
+ * LocationHandler
+ *
+ * This class takes care of all functionality related to handling Location.
  */
 
 public class LocationHandler implements LocationListener {
@@ -31,6 +33,17 @@ public class LocationHandler implements LocationListener {
     private Location lastLocation;
     public static final int LOCATION_REQUEST_CODE = 5;
 
+    /**
+     * Constructor
+     *
+     * Creates a Weakreference to the active activity, saves the callback & creates a LocationManager.
+     *
+     * @param a
+     *      A reference to the active activity
+     * @param cb
+     *      A locationHandlerCallback
+     */
+
     LocationHandler(Activity a, LocationHandlerCallback cb){
         activity = new WeakReference<Activity>(a);
         callback = cb;
@@ -39,6 +52,15 @@ public class LocationHandler implements LocationListener {
             locationManager = (LocationManager) activity.get().getSystemService(Context.LOCATION_SERVICE);
         }
     }
+
+    /**
+     * checkLocationPermissions
+     *
+     * Checks if the user has the right permissions if not they are requested.
+     * The results appear in the onRequestPermissionsResult() method in MapsActivity.
+     *
+     * @see MapsActivity
+     */
 
     public void checkLocationPermissions(){
         if(activity.get() == null){
@@ -53,17 +75,36 @@ public class LocationHandler implements LocationListener {
         }
     }
 
-    //Permission are checked in the main activity
+    /**
+     * getUserLocation
+     *
+     * Checks the current user location using ACCESS_FINE_LOCATION.
+     * Has a suppressLint since userPermissions are checked on MapsActivity.onCreate()
+     *
+     * @see MapsActivity
+     */
+
     @SuppressLint("MissingPermission")
     public void getUserLocation() {
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
     }
 
+    /**
+     * onLocationChanged
+     *
+     * Android Hook method, performed when the user location has updated.
+     * My emulator keeps sending data so a history of the user location is checked to make sure
+     * there is an actual location change. LocationListener implementation.
+     *
+     * @param location
+     *      Parameters are inserted by the framework, the current user location from the GPS
+     */
+
     @Override
     public void onLocationChanged(Location location) {
 
         try{
-            if(location.getLatitude() != lastLocation.getLatitude() && location.getLongitude() != lastLocation.getLongitude()){
+            if(location.getLatitude() != lastLocation.getLatitude() || location.getLongitude() != lastLocation.getLongitude()){
                 Log.d(MapsActivity.LOG, "New Location: " + location.toString());
                 callback.onUserLocationSuccess(location);
                 lastLocation = location;
@@ -75,20 +116,60 @@ public class LocationHandler implements LocationListener {
 
     }
 
+    /**
+     * onStatusChanged
+     *
+     * Android Hook method, performed when the status of the Location Provider changes.
+     * LocationListener implementation.
+     *
+     * @param s
+     *      Parameters are inserted by the framework, The name of the provider
+     * @param i
+     *      Parameters are inserted by the framework, Int value of provider Status
+     * @param bundle
+     *      Parameters are inserted by the framework, Specific information about the provider
+     */
+
     @Override
     public void onStatusChanged(String s, int i, Bundle bundle) {
         Log.d(MapsActivity.LOG, "status changed: provider " + s);
     }
+
+    /**
+     * onProviderEnabled
+     *
+     * Android Hook method, performed when a Location Provider is enabled.
+     * LocationListener implementation.
+     *
+     * @param s
+     *       Parameters are inserted by the framework, The name of the provider
+     */
 
     @Override
     public void onProviderEnabled(String s) {
         Log.d(MapsActivity.LOG, "provider enabled");
     }
 
+    /**
+     * onProviderDisabled
+     *
+     * Android Hook method, performed when a Location Provider is disabled.
+     * LocationListener implementation.
+     *
+     * @param s
+     *       Parameters are inserted by the framework, The name of the provider
+     */
+
     @Override
     public void onProviderDisabled(String s) {
         Log.d(MapsActivity.LOG, "provider disabled");
     }
+
+    /**
+     * removeUpdates
+     *
+     * Stops the Location Manager
+     */
 
     public void removeUpdates(){
         locationManager.removeUpdates(this);

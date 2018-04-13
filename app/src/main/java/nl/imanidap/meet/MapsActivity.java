@@ -29,7 +29,15 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 
-//changed to AppCompatActivity to show the actionbar
+/**
+ * MapsActivity
+ *
+ * This is the MainActivity of the app. It shows a map with all the MeetUp events based on the current user location &
+ * categories selected in the user preferences.
+ *
+ * @note extendingAppCompatActivity to show the actionbar
+ */
+
 public class MapsActivity extends AppCompatActivity
         implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener, GoogleMap.OnMapClickListener,
                     View.OnClickListener, LocationHandlerCallback, MeetupImageDownloadCallback {
@@ -47,6 +55,17 @@ public class MapsActivity extends AppCompatActivity
     private Location userLocation;
     public static Boolean settingsChanged = false;
 
+    /**
+     * onCreate
+     *
+     * Android Hook method, performed when the activity is created.
+     * The layout is set, user preferences are initialized, the mapFragment is initialized
+     * & items are added to the layout.
+     *
+     * @param savedInstanceState
+     *      Parameters are inserted by the framework
+     */
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,6 +81,7 @@ public class MapsActivity extends AppCompatActivity
 
         locationHandler = new LocationHandler(this, this);
         locationHandler.checkLocationPermissions();
+        locationHandler.getUserLocation();
 
         rlEventInfo = findViewById(R.id.rl_event_info);
         tvEventName = findViewById(R.id.tv_event_name);
@@ -70,22 +90,31 @@ public class MapsActivity extends AppCompatActivity
         rlEventInfo.setOnClickListener(this);
     }
 
+    /**
+     * onPause
+     *
+     * Android Hook method, performed when the activity is paused (user navigates away).
+     * The location manager from the LocationHandler is stopped.
+     *
+     * @see LocationHandler
+     */
+
     @Override
     protected void onPause() {
         super.onPause();
         locationHandler.removeUpdates();
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        locationHandler.removeUpdates();
-    }
+    /**
+     * onResume
+     *
+     * Android Hook Method, preformed when user navigates (back) to the activity.
+     * Requests new events if the settings have changed.
+     */
 
     @Override
     protected void onResume() {
         super.onResume();
-        locationHandler.getUserLocation();
         if(userLocation != null && settingsChanged){
             requestMeetEvents(userLocation);
             settingsChanged = false;
@@ -93,11 +122,41 @@ public class MapsActivity extends AppCompatActivity
 
     }
 
+    /**
+     * onCreateOptionsMenu
+     *
+     * Android Hook Method, performed when the options menu is created
+     * This is where the actionbar menu from the resources is loaded into the layout
+     *
+     * @param menu
+     *      Parameters are inserted by the framework, The menu
+     *
+     * @return true
+     *      indicates we want to override the default behaviour
+     *
+     */
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.actionbar, menu);
         return true;
     }
+
+    /**
+     * onOptionsItemSelected
+     *
+     * Android Hook Method, performed when an item on the actionbar is clicked.
+     * This is where in intent towards the SettingsActivity is send.
+     *
+     * @param item
+     *      Parameters are inserted by the framework, the selected menu item
+     *
+     * @return
+     *      Indicates we want to override the default behaviour
+     *
+     * @See SettingsActivity
+     *      The activity that is requested by the intent
+     */
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -109,21 +168,67 @@ public class MapsActivity extends AppCompatActivity
     }
 
     /**
-     * Manipulates the map once available.
+     * onRequestPermissionsResult
+     *
+     * Android Hook Method, performed when the result of a permission request is in
+     * This hook will either log that the permission is granted or close the activity
+     *
+     * @param requestCode
+     *      Parameters are inserted by the framework, the request code send with the permissions
+     * @param permissions
+     *      Parameters are inserted by the framework, an array with the requested permissions
+     * @param grantResults
+     *      Parameters are inserted by the framework, an array with the results of the request
+     *
+     */
+
+    public void onRequestPermissionsResult (int requestCode, String[] permissions, int[] grantResults) {
+        if(requestCode == LocationHandler.LOCATION_REQUEST_CODE){
+            //I know I asked for one permission so I can just grab the first and check it
+            if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                Log.d(LOG, "yaay, permission granted");
+
+            } else  {
+                Log.d(LOG, "App need location for basic functionality");
+                finish();
+                //TODO: this should eventually be a dialoge that then closes the app
+            }
+        }
+    }
+
+    /**
+     * onMapReady
+     *
+     * Android Hook Method, manipulates the map once available.
      * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
      * If Google Play services is not installed on the device, the user will be prompted to install
      * it inside the SupportMapFragment. This method will only be triggered once the user has
      * installed Google Play services and returned to the app.
+     * Implementation of the onMapReady Interface.
+     *
+     * @param googleMap
+     *      Parameters are inserted by the framework, instance of the google map
      */
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         mMap.setOnMarkerClickListener(this);
         mMap.setOnMapClickListener(this);
-
     }
+
+    /**
+     * onMarkerClick
+     *
+     * Android Hook Method, performed when a marker is clicked.
+     * Implementation of the onMarkerClickListener Interface.
+     *
+     * @param marker
+     *      Parameters are inserted by the framework, clicked marker
+     *
+     * @return true
+     *      To override the default behaviour
+     */
 
     @Override
     public boolean onMarkerClick(final Marker marker) {
@@ -132,6 +237,49 @@ public class MapsActivity extends AppCompatActivity
         showEventInfo(marker);
         return true;
     }
+
+    /**
+     * showEventInfo
+     *
+     * This method appends a view with a preview of the event.
+     *
+     * @param marker
+     *      Marker that has to be shown
+     */
+
+    private void showEventInfo(Marker marker){
+        Log.d(LOG, "Marker was clicked");
+        MeetEvent event = (MeetEvent) marker.getTag();
+        tvEventName.setText(event.getName());
+        tvGroupName.setText(event.getGroupName());
+        rlEventInfo.setVisibility(View.VISIBLE);
+    }
+
+    /***
+     * onClick
+     *
+     * Android Hook Method, performed when the preview view is clicked.
+     * Implementation of the onClickListener.
+     *
+     * @param view
+     */
+
+    @Override
+    public void onClick(View view) {
+        Intent eventDetailIntent = new Intent(this, EventDetailActivity.class);
+        eventDetailIntent.putExtra(EVENT_DETAIL_DATA, clickedEvent);
+        startActivity(eventDetailIntent);
+    }
+
+    /**
+     * onMapClick
+     *
+     * Android Hook Method, performed when the map is clicked.
+     * Implementation of the onMapClickListener Interface.
+     *
+     * @param latLng
+     *      Parameters are inserted by the framework, coordinates of the click
+     */
 
     @Override
     public void onMapClick(LatLng latLng) {
@@ -144,25 +292,60 @@ public class MapsActivity extends AppCompatActivity
         hideEventInfo();
     }
 
-    private void showEventInfo(Marker marker){
-        Log.d(LOG, "Marker was clicked");
-        MeetEvent event = (MeetEvent) marker.getTag();
-        tvEventName.setText(event.getName());
-        tvGroupName.setText(event.getGroupName());
-        rlEventInfo.setVisibility(View.VISIBLE);
-    }
+    /**
+     * hideEventInfo
+     *
+     * Hides the preview info of an event
+     */
 
     private void hideEventInfo(){
         Log.d(LOG, "Click on map");
         rlEventInfo.setVisibility(View.GONE);
     }
 
+    /**
+     * onUserLocationSuccess
+     *
+     * Handles a succesfull user location update.
+     * It will zoom in on the user location & request new events based on the new location.
+     * Implementation of LocationHandlerCallback.
+     *
+     * @param location
+     *      The current user location
+     *
+     * @see LocationHandler
+     */
+
     @Override
-    public void onClick(View view) {
-        Intent eventDetailIntent = new Intent(this, EventDetailActivity.class);
-        eventDetailIntent.putExtra(EVENT_DETAIL_DATA, clickedEvent);
-        startActivity(eventDetailIntent);
+    public void onUserLocationSuccess(Location location) {
+        userLocation = location;
+        zoomInOnUser(location);
+        requestMeetEvents(location);
     }
+
+    /**
+     * zoomInOnUser
+     *
+     * A function that zooms the camera of the map in on the user.
+     *
+     * @param location
+     *      The location where the zoom will focus on
+     */
+
+    private void zoomInOnUser(Location location){
+        LatLng user = new LatLng(location.getLatitude(), location.getLongitude());
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(user));
+        mMap.moveCamera(CameraUpdateFactory.zoomTo(11));
+    }
+
+    /**
+     * addEventsToMap
+     *
+     * adds a marker for each given event
+     *
+     * @param events
+     *      Meetup events
+     */
 
     public void addEventsToMap(ArrayList<MeetEvent> events){
         for ( MeetEvent event : events ) {
@@ -178,38 +361,18 @@ public class MapsActivity extends AppCompatActivity
         mMap.moveCamera(CameraUpdateFactory.newLatLng(firstEvent));
     }
 
-    public void onRequestPermissionsResult (int requestCode, String[] permissions, int[] grantResults) {
-        if(requestCode == LocationHandler.LOCATION_REQUEST_CODE){
-            //I know I asked for one permission so I can just grab the first and check it
-            if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
-                Log.d(LOG, "yaay, permission granted");
-
-            } else  {
-                Log.d(LOG, "App need location for basic functionality");
-                //TODO: this should eventually be a dialoge that then closes the app
-            }
-        }
-    }
-
-    @Override
-    public void onUserLocationSuccess(Location location) {
-        userLocation = location;
-        zoomInOnUser(location);
-        requestMeetEvents(location);
-    }
-
-    private void zoomInOnUser(Location location){
-        LatLng user = new LatLng(location.getLatitude(), location.getLongitude());
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(user));
-        mMap.moveCamera(CameraUpdateFactory.zoomTo(11));
-    }
+    /**
+     * requestMeetEvents
+     *
+     * This method will build an URL based on user location & user preference to request nearby events of an specific category
+     *
+     * @param location
+     *      The current user location
+     */
 
     public void requestMeetEvents(Location location){
         Log.d(LOG, "request new events");
         String categories = new MeetupEventsDownloadTask(this).getMeetupCategoriesFromUserPreferences();
-        Log.d(MapsActivity.LOG, categories);
-
-
 
         Uri.Builder uriBuilder = Uri.parse(MeetupEventsDownloadTask.MEETUP_EVENTS_BASE_URL).buildUpon()
                 .appendQueryParameter(MeetupEventsDownloadTask.KEY_PARAM, Secret.MEETUP_API_KEY)
@@ -230,6 +393,18 @@ public class MapsActivity extends AppCompatActivity
             e.printStackTrace();
         }
     }
+
+    /**
+     * loadImagePreview
+     *
+     * Implementation of MeetupImageDownloadCallback. This method is performed by the
+     * MeetupImageDownloadTask. In this method the image is put in the layout.
+     *
+     * @param b
+     *      The bitmap returned by the MeetupImageDownloadTask
+     *
+     * @see MeetupImageDownloadTask
+     */
 
     @Override
     public void loadImagePreview(Bitmap b){

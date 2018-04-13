@@ -1,14 +1,18 @@
 package nl.imanidap.meet;
 
-import android.graphics.Bitmap;
-
 import java.io.Serializable;
 
 /**
  * Created by maniflames on 01/04/2018.
  */
 
-//implementing serializable so I can pass the entire object through an intent
+/**
+ * MeetEvent
+ *
+ * A meetup event containing getters & setters to safely assign values.
+ * @note this class implements serializable so the entire object can be send with an intent
+ */
+
 public class MeetEvent implements Serializable {
     private String groupName;
     private String name;

@@ -3,7 +3,10 @@ package nl.imanidap.meet;
 import android.location.Location;
 
 /**
- * Created by maniflames on 12/04/2018.
+ * LocationHandlerCallback
+ *
+ * An interface to ensure the onUserLocationSuccess method can be executed
+ * @see LocationHandler
  */
 
 public interface LocationHandlerCallback {

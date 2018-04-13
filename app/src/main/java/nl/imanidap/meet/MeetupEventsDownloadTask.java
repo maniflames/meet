@@ -15,9 +15,10 @@ import java.util.ArrayList;
 
 
 /**
- * Created by maniflames on 01/04/2018.
+ * MeetupEventsDownloadsTask
+ *
+ * An AsyncTask extention that takes care of downloading events from meetup
  */
-
 
 public class MeetupEventsDownloadTask extends AsyncTask<URL, Void, ArrayList<MeetEvent>>{
     private WeakReference<MapsActivity> meetParent;
@@ -33,10 +34,59 @@ public class MeetupEventsDownloadTask extends AsyncTask<URL, Void, ArrayList<Mee
     public static final String LAT_PARAM = "lat";
     public static final String LONG_PARAM = "lon";
 
+    /**
+     * Constructor
+     *
+     * This constructor creates a weakreference to the MapsActivity
+     *
+     * @param parent
+     *      A mapsActivity
+     */
     MeetupEventsDownloadTask(MapsActivity parent){
         super();
         meetParent = new WeakReference<MapsActivity>(parent);
     }
+
+    /**
+     * doInBackground
+     *
+     * AsyncTask Hook Method, preformed on the background thread.
+     * This methods uses a downloadUtil to do an actual request.
+     *
+     * @param urls
+     *      The request that is being send
+     *
+     * @return meetEvents
+     *      Events from MeetUp
+     *
+     * @see DownloadUtils
+     */
+
+    @Override
+    protected ArrayList<MeetEvent> doInBackground(URL... urls) {
+        if(urls[0] == null){
+            return new ArrayList<MeetEvent>();
+        }
+
+        URL url = urls[0];
+
+        String reqResult = DownloadUtils.getRequest(url);
+        meetEvents = meetEventFromJSON(reqResult);
+
+        return meetEventFromJSON(reqResult);
+    }
+
+    /**
+     * meetEventFromJSON
+     *
+     * Parses json from a sting and turns it into MeetEvents
+     *
+     * @param s
+     *      String representation of JSON
+     *
+     * @return meetEvents
+     *      Events from MeetUp
+     */
 
     private ArrayList<MeetEvent> meetEventFromJSON(String s){
 
@@ -81,20 +131,18 @@ public class MeetupEventsDownloadTask extends AsyncTask<URL, Void, ArrayList<Mee
     }
 
 
-    @Override
-    protected ArrayList<MeetEvent> doInBackground(URL... urls) {
-        if(urls[0] == null){
-            return new ArrayList<MeetEvent>();
-        }
-
-        URL url = urls[0];
-
-        String reqResult = DownloadUtils.getRequest(url);
-        meetEvents = meetEventFromJSON(reqResult);
-
-        return meetEventFromJSON(reqResult);
-    }
-
+    /**
+     * onPostExecute
+     *
+     * AsyncTask hook method, this method is performed on the UI thread.
+     * The method that is performed is part of the MapsActivity Class.
+     * (addEventsToMap)
+     *
+     * @param meetEventsResult
+     *      A list of MeetEents
+     *
+     * @see MapsActivity
+     */
     @Override
     protected void onPostExecute(ArrayList<MeetEvent> meetEventsResult) {
         if(meetParent.get() != null){
@@ -103,7 +151,16 @@ public class MeetupEventsDownloadTask extends AsyncTask<URL, Void, ArrayList<Mee
         }
     }
 
-    //I probably need to move this method even though I don't like the idea
+    /**
+     * getMeetupCategoriesFromUserPreferences
+     *
+     * This reads the categories selected in the user preferences and returns the string with category id's,
+     * separated by comma so it can immedeatly be put into a request url.
+     *
+     * @return string
+     *      a string containing category id's separated by comma
+     */
+
     public String getMeetupCategoriesFromUserPreferences(){
         StringBuilder categories = new StringBuilder();
         if(meetParent.get() != null){

@@ -3,7 +3,10 @@ package nl.imanidap.meet;
 import android.graphics.Bitmap;
 
 /**
- * Created by maniflames on 13/04/2018.
+ * MeetupImageDownloadCallback
+ *
+ * An interface to ensure the loadImagePreview method can be executed
+ * @see MeetupImageDownloadTask
  */
 
 public interface MeetupImageDownloadCallback {

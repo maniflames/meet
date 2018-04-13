@@ -11,10 +11,24 @@ import java.net.URL;
 import java.util.Scanner;
 
 /**
- * Created by maniflames on 01/04/2018.
+ * Download Utils
+ *
+ * This Class contains static methods that serve as Utilities for making HTTP Requests
  */
 
 public class DownloadUtils {
+
+    /**
+     * getRequest
+     * A method that performs a GET request
+     *
+     * @param url
+     *     The url that will be requested
+     *
+     * @return String content or Null
+     *    A string containing the contents of the results
+     *    or null when something went wrong
+     */
 
     public static String getRequest(URL url){
 
@@ -49,6 +63,18 @@ public class DownloadUtils {
 
         return null;
     }
+
+    /**
+     * getRequestImage
+     * A method that performs a GET request optimized for images
+     *
+     * @param url
+     *    The url that will be requested
+     *
+     * @return Bitmap image or Null
+     *    Returns the Bitmap of the requested image
+     *    or null if something went wrong
+     */
 
     public static Bitmap getRequestImage(URL url){
         HttpURLConnection cURL = null;
