@@ -1,15 +1,17 @@
 package nl.imanidap.meet;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.Date;
 
-public class EventDetailActivity extends AppCompatActivity {
+public class EventDetailActivity extends AppCompatActivity implements MeetupImageDownloadCallback{
 
     private TextView tvEventName;
     private TextView tvEventTime;
@@ -25,6 +27,8 @@ public class EventDetailActivity extends AppCompatActivity {
 
         Intent eventDetailIntent = getIntent();
         event = (MeetEvent) eventDetailIntent.getSerializableExtra(MapsActivity.EVENT_DETAIL_DATA);
+
+        new MeetupImageDownloadTask(this).execute(event);
 
         populateView();
     }
@@ -67,5 +71,16 @@ public class EventDetailActivity extends AppCompatActivity {
 
         String rsvp = String.valueOf(event.getRsvpCount()) + rsvpSubstring;
         tvRSVPCount.setText(rsvp);
+    }
+
+    @Override
+    public void loadImagePreview(Bitmap b){
+        ImageView img = (ImageView) findViewById(R.id.iv_preview_image);
+
+        if(b != null) {
+            img.setImageBitmap(b);
+        } else {
+            img.setImageDrawable(getDrawable(R.drawable.steak));
+        }
     }
 }
