@@ -115,11 +115,11 @@ public class MapsActivity extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
+        locationHandler.getUserLocation();
         if(userLocation != null && settingsChanged){
             requestMeetEvents(userLocation);
             settingsChanged = false;
         }
-
     }
 
     /**
@@ -318,6 +318,7 @@ public class MapsActivity extends AppCompatActivity
 
     @Override
     public void onUserLocationSuccess(Location location) {
+        Log.d(LOG, "new location is being assigned");
         userLocation = location;
         zoomInOnUser(location);
         requestMeetEvents(location);
@@ -334,6 +335,7 @@ public class MapsActivity extends AppCompatActivity
 
     private void zoomInOnUser(Location location){
         LatLng user = new LatLng(location.getLatitude(), location.getLongitude());
+        Log.d(LOG, user.toString());
         mMap.moveCamera(CameraUpdateFactory.newLatLng(user));
         mMap.moveCamera(CameraUpdateFactory.zoomTo(11));
     }

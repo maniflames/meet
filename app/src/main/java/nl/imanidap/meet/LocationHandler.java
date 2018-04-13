@@ -28,7 +28,6 @@ import java.lang.ref.WeakReference;
 public class LocationHandler implements LocationListener {
     private WeakReference<Activity> activity;
     private LocationManager locationManager;
-    private GoogleMap mMap;
     private LocationHandlerCallback callback;
     private Location lastLocation;
     public static final int LOCATION_REQUEST_CODE = 5;
@@ -104,7 +103,7 @@ public class LocationHandler implements LocationListener {
     public void onLocationChanged(Location location) {
 
         try{
-            if(location.getLatitude() != lastLocation.getLatitude() || location.getLongitude() != lastLocation.getLongitude()){
+            if(location.getLatitude() != lastLocation.getLatitude() && location.getLongitude() != lastLocation.getLongitude()){
                 Log.d(MapsActivity.LOG, "New Location: " + location.toString());
                 callback.onUserLocationSuccess(location);
                 lastLocation = location;

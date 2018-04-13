@@ -27,6 +27,9 @@ public class SettingsActivity extends Activity {
     public static final String KEY_TYPE_SPIRITUALITY = "pref_event_type_spirituality";
     public static final Boolean DEFAULT_TYPE_SPIRITUALITY= false;
     public static final String CATEGORY_IDS_SPIRITUALITY = "22,24";
+    public static final Boolean DEFAULT_THEME_FILTER = false;
+    public static final String KEY_THEME_FILTER = "pref_theme_filter";
+
 
     /**
      * onCreate

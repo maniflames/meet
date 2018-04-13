@@ -1,9 +1,12 @@
 package nl.imanidap.meet;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -33,7 +36,7 @@ public class EventDetailActivity extends AppCompatActivity implements MeetupImag
      * onCreate
      *
      * Android Hook method, performed when the activity is created.
-     * The layout is set, eventData received from an intent and the image downloaded
+     * The layout is set, default preferences set, eventData received from an intent and the image downloaded
      *
      * @param savedInstanceState
      *      Parameters are inserted by the framework
@@ -43,6 +46,8 @@ public class EventDetailActivity extends AppCompatActivity implements MeetupImag
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_event_detail);
+
+        PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 
         Intent eventDetailIntent = getIntent();
         event = (MeetEvent) eventDetailIntent.getSerializableExtra(MapsActivity.EVENT_DETAIL_DATA);
@@ -152,22 +157,28 @@ public class EventDetailActivity extends AppCompatActivity implements MeetupImag
     @Override
     public void loadImagePreview(Bitmap b){
         ImageView img = (ImageView) findViewById(R.id.iv_preview_image);
+        SharedPreferences prefManager = PreferenceManager.getDefaultSharedPreferences(this);
+        Boolean filterActivated = prefManager.getBoolean(SettingsActivity.KEY_THEME_FILTER, SettingsActivity.DEFAULT_THEME_FILTER);
 
-        if(b != null) {
+        if(b != null && filterActivated) {
 
             Bitmap filter = Bitmap.createBitmap(b.getWidth(), b.getHeight(), Bitmap.Config.ARGB_8888);
             filter.setHasAlpha(true);
 
             Canvas canvas = new Canvas(filter);
-            //TODO: This could be different depenting on the theme
             int lightColor = Color.argb(255, 106, 17, 203);
             int darkColor = Color.argb(255, 37, 117, 252);
 
             filter = this.duoToneFilter(b, filter, lightColor, darkColor);
+            Paint paint = new Paint();
+            paint.setColor(Color.WHITE);
 
             canvas.drawBitmap(filter, 0, 0, null);
+            canvas.drawText(getString(R.string.app_name), b.getWidth() - 50, b.getHeight() -50, paint);
             img.setImageBitmap(filter);
 
+        } else if (b != null && !filterActivated) {
+            img.setImageBitmap(b);
         } else {
             img.setImageDrawable(getDrawable(R.drawable.steak));
             img.setPadding(25,0,25,0);

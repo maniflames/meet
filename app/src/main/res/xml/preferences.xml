@@ -24,4 +24,12 @@
             android:key="pref_event_type_spirituality"
             android:title="Spirituality and Paranormal" />
     </PreferenceCategory>
+    <PreferenceCategory
+        android:title="Theme"
+        android:key="pref_theme">
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="pref_theme_filter"
+            android:title="Meet Image Filter"/>
+    </PreferenceCategory>
 </PreferenceScreen>
