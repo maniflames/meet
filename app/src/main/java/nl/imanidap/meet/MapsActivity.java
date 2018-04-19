@@ -343,13 +343,16 @@ public class MapsActivity extends AppCompatActivity
     /**
      * addEventsToMap
      *
-     * adds a marker for each given event
+     * adds a marker for each given event, removes the old markers as well
      *
      * @param events
      *      Meetup events
      */
 
     public void addEventsToMap(ArrayList<MeetEvent> events){
+        mMap.clear();
+        locations.clear();
+
         for ( MeetEvent event : events ) {
             //get latitude & longitude and create a new marker /w the MeetEvent as tag
             Marker m = mMap.addMarker(new MarkerOptions()
@@ -358,9 +361,6 @@ public class MapsActivity extends AppCompatActivity
             m.setTag(event);
             locations.add(m);
         }
-
-        LatLng firstEvent = new LatLng(events.get(0).getLatitude(), events.get(0).getLongitude());
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(firstEvent));
     }
 
     /**

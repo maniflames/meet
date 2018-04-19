@@ -52,9 +52,13 @@ public class EventDetailActivity extends AppCompatActivity implements MeetupImag
         Intent eventDetailIntent = getIntent();
         event = (MeetEvent) eventDetailIntent.getSerializableExtra(MapsActivity.EVENT_DETAIL_DATA);
 
-        new MeetupImageDownloadTask(this).execute(event);
-
         populateView();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        new MeetupImageDownloadTask(this).execute(event);
     }
 
     /**
@@ -74,8 +78,8 @@ public class EventDetailActivity extends AppCompatActivity implements MeetupImag
         tvGroupName.setText(event.getGroupName());
         tvEventDescription.setText(event.getDescription());
 
-
-        tvEventTime.setText(new Date(event.getTime()).toString());
+        Date eventStart = new Date(event.getTime());
+        tvEventTime.setText(eventStart.toString());
 
         String rsvpSubstring;
 
@@ -174,7 +178,7 @@ public class EventDetailActivity extends AppCompatActivity implements MeetupImag
             paint.setColor(Color.WHITE);
 
             canvas.drawBitmap(filter, 0, 0, null);
-            canvas.drawText(getString(R.string.app_name), b.getWidth() - 50, b.getHeight() -50, paint);
+            canvas.drawText(getString(R.string.app_name), b.getWidth() - 35, b.getHeight() - 10, paint);
             img.setImageBitmap(filter);
 
         } else if (b != null && !filterActivated) {

@@ -12,10 +12,6 @@ import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 
-
-import com.google.android.gms.maps.GoogleMap;
-
-
 import java.lang.ref.WeakReference;
 
 
@@ -95,6 +91,9 @@ public class LocationHandler implements LocationListener {
      * My emulator keeps sending data so a history of the user location is checked to make sure
      * there is an actual location change. LocationListener implementation.
      *
+     * The reason for not printing the stacktrace in the catch is because the exception will most likely refer to
+     * lastLocation not existing yet, therefore pointing to null.
+     *
      * @param location
      *      Parameters are inserted by the framework, the current user location from the GPS
      */
@@ -103,11 +102,12 @@ public class LocationHandler implements LocationListener {
     public void onLocationChanged(Location location) {
 
         try{
-            if(location.getLatitude() != lastLocation.getLatitude() && location.getLongitude() != lastLocation.getLongitude()){
+            if(location.getLatitude() != lastLocation.getLatitude() || location.getLongitude() != lastLocation.getLongitude()){
                 Log.d(MapsActivity.LOG, "New Location: " + location.toString());
                 callback.onUserLocationSuccess(location);
                 lastLocation = location;
             }
+
         } catch (NullPointerException e) {
             callback.onUserLocationSuccess(location);
             lastLocation = location;
